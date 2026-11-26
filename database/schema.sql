@@ -183,6 +183,7 @@ CREATE TABLE user_quiz_attempts (
   id               INT UNSIGNED NOT NULL AUTO_INCREMENT,
   user_id          INT UNSIGNED NOT NULL,
   exercise_id      VARCHAR(40) NOT NULL,
+  submission_id    VARCHAR(36) NULL,
   status           ENUM('in_progress','completed') NOT NULL DEFAULT 'completed',
   total_questions  SMALLINT UNSIGNED NOT NULL,
   answered_count   SMALLINT UNSIGNED NOT NULL DEFAULT 0,
@@ -196,6 +197,7 @@ CREATE TABLE user_quiz_attempts (
   completed_at     DATETIME NULL,
   created_at       DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (id),
+  UNIQUE KEY uk_uqa_user_submission (user_id, submission_id),
   KEY idx_uqa_user_completed (user_id, completed_at),
   KEY idx_uqa_exercise (exercise_id, user_id),
   KEY idx_uqa_completed (completed_at),
@@ -213,13 +215,14 @@ CREATE TABLE user_quiz_answers (
   is_correct      TINYINT(1) NOT NULL DEFAULT 0,
   is_doubtful     TINYINT(1) NOT NULL DEFAULT 0,     -- ditandai ragu-ragu
   points_earned   SMALLINT UNSIGNED NOT NULL DEFAULT 0,
+  question_snapshot JSON NULL,                       -- teks/nomor/bobot/kunci saat attempt dibuat
   PRIMARY KEY (id),
   UNIQUE KEY uk_uqa_attempt_question (attempt_id, question_id),
   KEY idx_uqa_question (question_id),
   CONSTRAINT fk_uqa_attempt
     FOREIGN KEY (attempt_id) REFERENCES user_quiz_attempts (id) ON DELETE CASCADE,
   CONSTRAINT fk_uqa_question
-    FOREIGN KEY (question_id) REFERENCES quiz_questions (id) ON DELETE CASCADE
+    FOREIGN KEY (question_id) REFERENCES quiz_questions (id) ON DELETE RESTRICT
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- ============================================================
@@ -258,6 +261,7 @@ CREATE TABLE diagnostic_questions (
 CREATE TABLE diagnostic_history (
   id                    INT UNSIGNED NOT NULL AUTO_INCREMENT,
   user_id               INT UNSIGNED NOT NULL,
+  submission_id         VARCHAR(36) NULL,
   total_questions       SMALLINT UNSIGNED NOT NULL,
   answered_count        SMALLINT UNSIGNED NOT NULL DEFAULT 0,
   correct_count         SMALLINT UNSIGNED NOT NULL DEFAULT 0,
@@ -266,6 +270,7 @@ CREATE TABLE diagnostic_history (
   total_time_spent_seconds INT UNSIGNED NOT NULL DEFAULT 0,
   created_at            DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (id),
+  UNIQUE KEY uk_dh_user_submission (user_id, submission_id),
   KEY idx_dh_user_created (user_id, created_at),
   CONSTRAINT fk_dh_user FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
@@ -279,13 +284,14 @@ CREATE TABLE user_diagnostic_answers (
   selected_option CHAR(1) NULL,
   is_correct     TINYINT(1) NOT NULL DEFAULT 0,
   is_doubtful    TINYINT(1) NOT NULL DEFAULT 0,
+  question_snapshot JSON NULL,                       -- materi/pembahasan saat tes dibuat
   PRIMARY KEY (id),
   UNIQUE KEY uk_uda_diagnostic_question (diagnostic_id, question_id),
   KEY idx_uda_question (question_id),
   CONSTRAINT fk_uda_diagnostic
     FOREIGN KEY (diagnostic_id) REFERENCES diagnostic_history (id) ON DELETE CASCADE,
   CONSTRAINT fk_uda_question
-    FOREIGN KEY (question_id) REFERENCES diagnostic_questions (id) ON DELETE CASCADE
+    FOREIGN KEY (question_id) REFERENCES diagnostic_questions (id) ON DELETE RESTRICT
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- ============================================================
