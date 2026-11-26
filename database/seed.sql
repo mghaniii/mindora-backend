@@ -10,6 +10,7 @@
 --    - diagnostic_questions = 10 soal diagnostik terbaru
 --      (kunci: B, C, C, C, C, C, B, C, C, C)
 --    - materials = KATALOG_MATERI (materiService.js)
+--    - exercises + quiz_questions = 5 latihan dan 32 soal latihanService.js
 --
 --  Catatan: riwayat diagnostik lama ikut di-reset karena soal
 --  lama diganti total; akun demo kembali "belum mengerjakan".
@@ -64,7 +65,201 @@ VALUES
    'Bab 10 • Statistika', 5, 8, 30, 100, NULL, 4, 6);
 
 -- ------------------------------------------------------------
--- 3. PROGRES MATERI user id=1 (akun demo)
+-- 3. EXERCISES + QUIZ QUESTIONS (5 latihan, 32 soal)
+--    INSERT idempoten agar bank soal lama diperbarui tanpa dihapus.
+-- ------------------------------------------------------------
+INSERT INTO exercises
+  (id, exercise_type, topic_slug, topic_label, title, description,
+   questions_count, questions_label, duration_minutes, xp_reward,
+   tag_label, tag_variant, icon_type, formula_title, formula_expression,
+   phase, is_active)
+VALUES
+  ('lat-1', 'latihan', 'matriks', 'Matriks & Sistem Persamaan Linier (SPLDV)',
+   'Penjumlahan & Perkalian Skalar Matriks',
+   'Pondasi ordo matriks, elemen seletak, serta sifat asosiatif dasar.',
+   6, NULL, 8, 40, NULL, NULL, 'matrix-grid',
+   'Sifat Perkalian Skalar', 'k·(A + B) = k·A + k·B',
+   'Fase F SMA • Matematika Wajib', 1),
+  ('lat-2', 'latihan', 'matriks', 'Matriks & Sistem Persamaan Linier (SPLDV)',
+   'Determinan & Invers Matriks 2×2',
+   'Perhitungan determinan, sifat matriks singular, dan rumus invers.',
+   8, NULL, 12, 60, NULL, NULL, 'matrix-determinant',
+   'Rumus Determinan 2×2', 'det(M) = (a·d) - (b·c)',
+   'Fase F SMA • Matematika Wajib', 1),
+  ('lat-3', 'latihan', 'matriks', 'Matriks & Sistem Persamaan Linier (SPLDV)',
+   'Aplikasi Matriks dalam SPLDV & Ekonomi',
+   'Pemodelan konteks toko belanja dan sistem persamaan dua variabel.',
+   5, NULL, 15, 75, NULL, NULL, 'chart-trend',
+   'Solusi SPLDV Matriks', 'AX = B  ⇒  X = A⁻¹·B',
+   'Fase F SMA • Matematika Wajib', 1),
+  ('lat-4', 'latihan', 'matriks', 'Matriks & Sistem Persamaan Linier (SPLDV)',
+   'Evaluasi Kesalahan Tanda Negatif Invers',
+   'Kaji ulang kesalahan peletakan tanda minus diagonal samping.',
+   3, '3 Soal Ulang', 5, NULL, 'Remediasi', 'danger', 'warning-refresh',
+   'Rumus Invers 2×2', 'A⁻¹ = (1/det)·[d -b; -c a]',
+   'Fase F SMA • Matematika Wajib', 1),
+  ('kuis-harian', 'kuis_harian', 'matriks', 'Matriks & Sistem Persamaan Linier (SPLDV)',
+   'Kuis Harian: Matriks & Determinan 2×2',
+   'Evaluasi pemahaman matriks dan determinan 2×2.',
+   10, NULL, 15, 100, NULL, NULL, 'matrix-grid',
+   'Rumus Determinan 2×2', 'det(M) = (a·d) - (b·c)',
+   'Fase F SMA • Matematika Wajib', 1)
+ON DUPLICATE KEY UPDATE
+  exercise_type = VALUES(exercise_type),
+  topic_slug = VALUES(topic_slug),
+  topic_label = VALUES(topic_label),
+  title = VALUES(title),
+  description = VALUES(description),
+  questions_count = VALUES(questions_count),
+  questions_label = VALUES(questions_label),
+  duration_minutes = VALUES(duration_minutes),
+  xp_reward = VALUES(xp_reward),
+  tag_label = VALUES(tag_label),
+  tag_variant = VALUES(tag_variant),
+  icon_type = VALUES(icon_type),
+  formula_title = VALUES(formula_title),
+  formula_expression = VALUES(formula_expression),
+  phase = VALUES(phase),
+  is_active = VALUES(is_active);
+
+INSERT INTO quiz_questions
+  (id, exercise_id, question_no, difficulty, points, text, options, correct_option, visual)
+VALUES
+  ('l1-1', 'lat-1', 1, 'mudah', 5,
+   'Diketahui matriks {A} dan {B} seperti di bawah. Elemen baris ke-2 kolom ke-1 dari {A + B} adalah…',
+   '[{"id":"A","label":"2"},{"id":"B","label":"3"},{"id":"C","label":"4"},{"id":"D","label":"9"}]', 'B',
+   '{"matrices":[{"label":"A","rows":[[2,3],[1,4]]},{"label":"B","rows":[[1,0],[2,5]]}],"operator":"+"}'),
+  ('l1-2', 'lat-1', 2, 'mudah', 5,
+   'Hasil perkalian skalar {3A} memiliki elemen baris ke-1 kolom ke-2 sebesar…',
+   '[{"id":"A","label":"-3"},{"id":"B","label":"3"},{"id":"C","label":"-1"},{"id":"D","label":"12"}]', 'A',
+   '{"matrices":[{"label":"A","rows":[[2,-1],[0,4]]}]}'),
+  ('l1-3', 'lat-1', 3, 'menengah', 10,
+   'Jumlah elemen diagonal utama (trace) dari {A + B} adalah…',
+   '[{"id":"A","label":"4"},{"id":"B","label":"5"},{"id":"C","label":"6"},{"id":"D","label":"10"}]', 'B',
+   '{"matrices":[{"label":"A","rows":[[1,2],[3,4]]},{"label":"B","rows":[[0,1],[1,0]]}],"operator":"+"}'),
+  ('l1-4', 'lat-1', 4, 'menengah', 10,
+   'Elemen baris ke-2 kolom ke-2 dari {2A − B} adalah…',
+   '[{"id":"A","label":"3"},{"id":"B","label":"2"},{"id":"C","label":"4"},{"id":"D","label":"5"}]', 'A',
+   '{"matrices":[{"label":"A","rows":[[3,1],[2,2]]},{"label":"B","rows":[[1,0],[1,1]]}],"operator":"−"}'),
+  ('l1-5', 'lat-1', 5, 'menengah', 10,
+   'Sifat {(A + B) + C = A + (B + C)} pada penjumlahan matriks disebut sifat…',
+   '[{"id":"A","label":"Komutatif"},{"id":"B","label":"Asosiatif"},{"id":"C","label":"Distributif"},{"id":"D","label":"Identitas"}]', 'B', NULL),
+  ('l1-6', 'lat-1', 6, 'sulit', 15,
+   'Jika {A = B}, maka nilai {x + y} adalah…',
+   '[{"id":"A","label":"3"},{"id":"B","label":"4"},{"id":"C","label":"5"},{"id":"D","label":"6"}]', 'C',
+   '{"matrices":[{"label":"A","rows":[["x",2],[3,4]]},{"label":"B","rows":[[1,2],[3,"y"]]}],"operator":"="}'),
+
+  ('l2-1', 'lat-2', 1, 'mudah', 5,
+   'Determinan dari matriks {M} adalah…',
+   '[{"id":"A","label":"5"},{"id":"B","label":"6"},{"id":"C","label":"11"},{"id":"D","label":"-5"}]', 'A',
+   '{"matrices":[{"label":"M","rows":[[2,1],[3,4]]}]}'),
+  ('l2-2', 'lat-2', 2, 'mudah', 5,
+   'Matriks {M} disebut singular karena determinannya bernilai…',
+   '[{"id":"A","label":"0"},{"id":"B","label":"1"},{"id":"C","label":"20"},{"id":"D","label":"40"}]', 'A',
+   '{"matrices":[{"label":"M","rows":[[5,2],[10,4]]}]}'),
+  ('l2-3', 'lat-2', 3, 'menengah', 10,
+   'Diketahui matriks {P} dan matriks {Q} di bawah ini. Jika determinan dari matriks hasil penjumlahan (P + Q) adalah ~k~, berapakah nilai dari {2k}?',
+   '[{"id":"A","label":"30"},{"id":"B","label":"60"},{"id":"C","label":"54"},{"id":"D","label":"72"}]', 'B',
+   '{"matrices":[{"label":"P","rows":[[4,-2],[3,1]]},{"label":"Q","rows":[[1,2],[0,5]]}],"operator":"+"}'),
+  ('l2-4', 'lat-2', 4, 'menengah', 10,
+   'Elemen baris ke-1 kolom ke-2 dari {M⁻¹} adalah…',
+   '[{"id":"A","label":"1"},{"id":"B","label":"-1"},{"id":"C","label":"2"},{"id":"D","label":"-2"}]', 'A',
+   '{"matrices":[{"label":"M","rows":[[4,2],[3,1]]}]}'),
+  ('l2-5', 'lat-2', 5, 'menengah', 10,
+   'Determinan dari matriks {M} adalah…',
+   '[{"id":"A","label":"10"},{"id":"B","label":"12"},{"id":"C","label":"14"},{"id":"D","label":"16"}]', 'C',
+   '{"matrices":[{"label":"M","rows":[[3,-2],[1,4]]}]}'),
+  ('l2-6', 'lat-2', 6, 'sulit', 15,
+   'Jika {det(A) = 3} dan {det(B) = 4}, maka {det(AB)} sama dengan…',
+   '[{"id":"A","label":"7"},{"id":"B","label":"12"},{"id":"C","label":"1"},{"id":"D","label":"81"}]', 'B', NULL),
+  ('l2-7', 'lat-2', 7, 'sulit', 15,
+   'Matriks {M} tidak memiliki invers (singular). Nilai {x} yang memenuhi adalah…',
+   '[{"id":"A","label":"1"},{"id":"B","label":"2"},{"id":"C","label":"3"},{"id":"D","label":"6"}]', 'A',
+   '{"matrices":[{"label":"M","rows":[["2x",3],[4,6]]}]}'),
+  ('l2-8', 'lat-2', 8, 'sulit', 15,
+   'Elemen baris ke-2 kolom ke-1 dari {M⁻¹} adalah…',
+   '[{"id":"A","label":"2"},{"id":"B","label":"-2"},{"id":"C","label":"5"},{"id":"D","label":"-5"}]', 'B',
+   '{"matrices":[{"label":"M","rows":[[1,2],[2,5]]}]}'),
+
+  ('l3-1', 'lat-3', 1, 'menengah', 10,
+   'Harga {2 buku + 1 pensil} adalah Rp8.000, sedangkan {1 buku + 2 pensil} Rp7.000. Jika dimodelkan sebagai {AX = B}, harga satu buku adalah…',
+   '[{"id":"A","label":"Rp2.000"},{"id":"B","label":"Rp3.000"},{"id":"C","label":"Rp4.000"},{"id":"D","label":"Rp5.000"}]', 'B', NULL),
+  ('l3-2', 'lat-3', 2, 'menengah', 10,
+   'Determinan matriks koefisien dari sistem {2x + y = 8.000} dan {x + 2y = 7.000} adalah…',
+   '[{"id":"A","label":"1"},{"id":"B","label":"2"},{"id":"C","label":"3"},{"id":"D","label":"5"}]', 'C', NULL),
+  ('l3-3', 'lat-3', 3, 'sulit', 15,
+   'Toko roti menjual paket {3 roti + 2 susu} seharga Rp24.000 dan {1 roti + 3 susu} seharga Rp22.000. Harga satu susu adalah…',
+   '[{"id":"A","label":"Rp4.000"},{"id":"B","label":"Rp5.000"},{"id":"C","label":"Rp6.000"},{"id":"D","label":"Rp7.000"}]', 'C', NULL),
+  ('l3-4', 'lat-3', 4, 'sulit', 15,
+   'Sistem {AX = B} dengan matriks {A} di bawah dan {B} = [5; 1] memiliki solusi {x} dan {y}. Nilai {x · y} adalah…',
+   '[{"id":"A","label":"5"},{"id":"B","label":"6"},{"id":"C","label":"8"},{"id":"D","label":"9"}]', 'B',
+   '{"matrices":[{"label":"A","rows":[[1,1],[2,-1]]}]}'),
+  ('l3-5', 'lat-3', 5, 'menengah', 10,
+   'Sistem persamaan linear {AX = B} memiliki solusi tunggal jika dan hanya jika…',
+   '[{"id":"A","label":"det(A) = 0"},{"id":"B","label":"det(A) ≠ 0"},{"id":"C","label":"A matriks nol"},{"id":"D","label":"B matriks nol"}]', 'B', NULL),
+
+  ('l4-1', 'lat-4', 1, 'mudah', 5,
+   'Pada invers matriks {M}, elemen baris ke-1 kolom ke-2 bernilai…',
+   '[{"id":"A","label":"-3/5"},{"id":"B","label":"3/5"},{"id":"C","label":"-1/5"},{"id":"D","label":"4/5"}]', 'A',
+   '{"matrices":[{"label":"M","rows":[[2,3],[1,4]]}]}'),
+  ('l4-2', 'lat-4', 2, 'menengah', 10,
+   'Rumus invers {A⁻¹ = (1/det(A))·adj(A)}. Untuk {A} = [a b; c d], elemen diagonal samping pada adj(A) bertanda…',
+   '[{"id":"A","label":"Positif keduanya"},{"id":"B","label":"Negatif keduanya"},{"id":"C","label":"a positif, d negatif"},{"id":"D","label":"b positif, c negatif"}]', 'B', NULL),
+  ('l4-3', 'lat-4', 3, 'menengah', 10,
+   'Elemen baris ke-1 kolom ke-2 dari {M⁻¹} adalah…',
+   '[{"id":"A","label":"3"},{"id":"B","label":"-3"},{"id":"C","label":"7"},{"id":"D","label":"-2"}]', 'B',
+   '{"matrices":[{"label":"M","rows":[[1,3],[2,7]]}]}'),
+
+  ('kh-1', 'kuis-harian', 1, 'mudah', 5,
+   'Ordo dari matriks {M} di bawah adalah…',
+   '[{"id":"A","label":"2×2"},{"id":"B","label":"2×3"},{"id":"C","label":"3×2"},{"id":"D","label":"3×3"}]', 'B',
+   '{"matrices":[{"label":"M","rows":[[2,3,1],[4,0,5]]}]}'),
+  ('kh-2', 'kuis-harian', 2, 'mudah', 5,
+   'Determinan dari matriks {M} adalah…',
+   '[{"id":"A","label":"10"},{"id":"B","label":"12"},{"id":"C","label":"14"},{"id":"D","label":"2"}]', 'A',
+   '{"matrices":[{"label":"M","rows":[[3,1],[2,4]]}]}'),
+  ('kh-3', 'kuis-harian', 3, 'menengah', 10,
+   'Diketahui matriks {P} dan matriks {Q} di bawah ini. Jika determinan dari matriks hasil penjumlahan (P + Q) adalah ~k~, berapakah nilai dari {2k}?',
+   '[{"id":"A","label":"30"},{"id":"B","label":"60"},{"id":"C","label":"54"},{"id":"D","label":"72"}]', 'B',
+   '{"matrices":[{"label":"P","rows":[[4,-2],[3,1]]},{"label":"Q","rows":[[1,2],[0,5]]}],"operator":"+"}'),
+  ('kh-4', 'kuis-harian', 4, 'menengah', 10,
+   'Jumlah elemen diagonal utama (trace) dari {A + B} adalah…',
+   '[{"id":"A","label":"4"},{"id":"B","label":"5"},{"id":"C","label":"6"},{"id":"D","label":"10"}]', 'B',
+   '{"matrices":[{"label":"A","rows":[[1,2],[3,4]]},{"label":"B","rows":[[0,1],[1,0]]}],"operator":"+"}'),
+  ('kh-5', 'kuis-harian', 5, 'menengah', 10,
+   'Elemen baris ke-1 kolom ke-2 dari {M⁻¹} adalah…',
+   '[{"id":"A","label":"1"},{"id":"B","label":"-1"},{"id":"C","label":"2"},{"id":"D","label":"-2"}]', 'A',
+   '{"matrices":[{"label":"M","rows":[[4,2],[3,1]]}]}'),
+  ('kh-6', 'kuis-harian', 6, 'sulit', 15,
+   'Matriks {M} tidak memiliki invers (singular). Nilai {x} yang memenuhi adalah…',
+   '[{"id":"A","label":"1"},{"id":"B","label":"2"},{"id":"C","label":"3"},{"id":"D","label":"6"}]', 'A',
+   '{"matrices":[{"label":"M","rows":[["2x",3],[4,6]]}]}'),
+  ('kh-7', 'kuis-harian', 7, 'menengah', 10,
+   'Harga {2 buku + 1 pensil} adalah Rp8.000, sedangkan {1 buku + 2 pensil} Rp7.000. Jika dimodelkan sebagai {AX = B}, harga satu buku adalah…',
+   '[{"id":"A","label":"Rp2.000"},{"id":"B","label":"Rp3.000"},{"id":"C","label":"Rp4.000"},{"id":"D","label":"Rp5.000"}]', 'B', NULL),
+  ('kh-8', 'kuis-harian', 8, 'mudah', 5,
+   'Hasil perkalian skalar {3A} memiliki elemen baris ke-1 kolom ke-2 sebesar…',
+   '[{"id":"A","label":"-3"},{"id":"B","label":"3"},{"id":"C","label":"-1"},{"id":"D","label":"12"}]', 'A',
+   '{"matrices":[{"label":"A","rows":[[2,-1],[0,4]]}]}'),
+  ('kh-9', 'kuis-harian', 9, 'sulit', 15,
+   'Jika {det(A) = 3} dan {det(B) = 4}, maka {det(AB)} sama dengan…',
+   '[{"id":"A","label":"7"},{"id":"B","label":"12"},{"id":"C","label":"1"},{"id":"D","label":"81"}]', 'B', NULL),
+  ('kh-10', 'kuis-harian', 10, 'menengah', 10,
+   'Elemen baris ke-1 kolom ke-2 dari {M⁻¹} adalah…',
+   '[{"id":"A","label":"3"},{"id":"B","label":"-3"},{"id":"C","label":"7"},{"id":"D","label":"-2"}]', 'B',
+   '{"matrices":[{"label":"M","rows":[[1,3],[2,7]]}]}')
+ON DUPLICATE KEY UPDATE
+  exercise_id = VALUES(exercise_id),
+  question_no = VALUES(question_no),
+  difficulty = VALUES(difficulty),
+  points = VALUES(points),
+  text = VALUES(text),
+  options = VALUES(options),
+  correct_option = VALUES(correct_option),
+  visual = VALUES(visual);
+
+-- ------------------------------------------------------------
+-- 4. PROGRES MATERI user id=1 (akun demo)
 --    mat-3 sengaja TIDAK diberi baris: LEFT JOIN menghasilkan
 --    default (status 'ready', progress 0).
 -- ------------------------------------------------------------
@@ -78,7 +273,7 @@ VALUES
   (1, 'mat-6', 'locked_level', 0, 0, NULL, NULL);
 
 -- ------------------------------------------------------------
--- 4. SOAL DIAGNOSTIK (10 soal terbaru)
+-- 5. SOAL DIAGNOSTIK (10 soal terbaru)
 --    id dibuat eksplisit (1-10) supaya import ulang tidak
 --    menggeser id — frontend mengirim questionId numerik yang
 --    harus cocok dengan id ini.

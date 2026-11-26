@@ -1,8 +1,10 @@
 import dotenv from 'dotenv';
 import app from './app.js';
 import pool from './config/database.js';
+import { assertJwtSecret } from './utils/jwtHelper.js';
 
 dotenv.config();
+assertJwtSecret();
 
 const PORT = Number(process.env.PORT) || 8080;
 
